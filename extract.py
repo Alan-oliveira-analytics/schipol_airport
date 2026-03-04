@@ -6,7 +6,8 @@ import re
 import logging
 from pathlib import Path
 import time
-
+import pytz
+from datetime import datetime, timedelta
 
 logging.basicConfig(
     filename=os.path.join(str(Path.home()), "aeroporto.log"),
@@ -56,7 +57,7 @@ def get_endpoint (endpoint, endpoint_id=None, params=None):
     while link:= processar_headers_next(response.headers): #enquanto eu tiver um link (:= operador morsa)
         time.sleep(0.5) # pra não fazer várias requisições ao mesmo tempo
         logger.info(f"Páginas: {numero_paginas} link:{link}")
-        response = requests.get(link, headers=headers, params=params)
+        response = requests.get(link, headers=headers)
         response.raise_for_status()
         resultados.append(response.json())
 
@@ -97,7 +98,42 @@ def processar_headers_numero_paginas(headers):
             return int(numero)
 
 
+    return 0
 
-if __name__ == "__main__":
-    get_endpoint("flights")
 
+def get_flights_agendado_hoje():
+    return get_endpoint("flights")
+
+
+def get_flights_agendado_ontem():
+
+    agora = datetime.now(pytz.timezone("Europe/Amsterdam")) #pra pegar a data e hora atual no fuso horário de Amsterdam
+    ontem = agora.date() - timedelta(days=1) #pra pegar a data de ontem
+
+    ontem = ontem.strftime("%Y-%m-%d") #pra formatar a data de ontem no formato YYYY-MM-DD - informado doc API
+
+    params = {
+        "scheduleDate": ontem
+    }
+    print(params)
+
+    return get_endpoint(endpoint="flights", params=params)
+
+
+def get_flights_por_id(flight_id):
+    return get_endpoint(endpoint="flights", endpoint_id=flight_id)
+
+def get_airlines():
+    return get_endpoint("airlines")
+
+def get_airlines_por_iata_icao(iata_ou_icao):
+    return get_endpoint("airlines", endpoint_id=iata_ou_icao)
+
+def get_aircraft_types():
+    return get_endpoint("aircrafttypes")
+
+def get_destinations():
+    return get_endpoint("destinations")
+
+def get_destinations_por_iata(iata):
+    return get_endpoint("destinations", endpoint_id=iata)
