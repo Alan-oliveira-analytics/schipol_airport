@@ -28,7 +28,7 @@ load_dotenv(env_path)
 token = os.getenv("APP_KEY")
 app_id = os.getenv("APP_ID")
 
-def get_endpoint (endpoint, endpoint_id=None, params=None):
+def get_endpoint (endpoint, endpoint_id=None, params=None, teste=False):
 
     headers = {
         "Accept": "application/json",
@@ -50,6 +50,8 @@ def get_endpoint (endpoint, endpoint_id=None, params=None):
 
     resultados.append(response.json())
 
+    page_test = 0
+
     numero_paginas = processar_headers_numero_paginas(response.headers)
 
     link = processar_headers_next(response.headers)
@@ -60,6 +62,12 @@ def get_endpoint (endpoint, endpoint_id=None, params=None):
         response = requests.get(link, headers=headers)
         response.raise_for_status()
         resultados.append(response.json())
+
+        if teste == True:
+            page_test +=1
+
+        if page_test == 5:
+            break
 
     return resultados
 
@@ -133,7 +141,7 @@ def get_aircraft_types():
     return get_endpoint("aircrafttypes")
 
 def get_destinations():
-    return get_endpoint("destinations")
+    return get_endpoint("destinations", teste=True)
 
 def get_destinations_por_iata(iata):
     return get_endpoint("destinations", endpoint_id=iata)
